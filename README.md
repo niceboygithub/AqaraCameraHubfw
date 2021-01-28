@@ -8,5 +8,7 @@ The repository includes the following feature.
 
     including ipl, spl, kernel and rootfs
 
+3. ota bin
+
 
 <a href="https://www.buymeacoffee.com/niceboygithub" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
