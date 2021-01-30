@@ -17,7 +17,8 @@ The repository includes the following feature.
 
 4. rRTSPServer
 
-   RTSP server.
+   RTSP server. 
+   Notice: For G2, RTSP server only work low resolution and firmware version 3.4.6 and 3.5.7.
 
 5. www.tar.gz
    www folder of httpd, add to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
