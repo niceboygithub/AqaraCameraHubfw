@@ -19,6 +19,17 @@ The repository includes the following feature.
 
    RTSP server. 
    Notice: For G2, RTSP server only work low resolution and firmware version 3.4.6 and 3.5.7.
+   for Camera G2
+```shell
+   h264grabber -f -r LOW &
+   RRTSP_RES=1 rRTSPServer &
+```
+   for Camera G2H
+```shell
+   h264grabber -f &
+   rRTSPServer
+```
+   copy two binary to /system/bin, then add to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
 
 5. www.tar.gz
    www folder of httpd, add to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
