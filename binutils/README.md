@@ -2,22 +2,31 @@
 
 The repository includes the following feature.
 
-1. bettery busybox
-    busybox-armv7l
+1. busybox-armv7l
+
+   bettery busybox
+    
 
 2. imggrabber
+
    Use to snapshot of camera
 
 3. h264grabber
+
    For streaming of camera
 
-4. www.tar.gz
+4. rRTSPServer
+
+   RTSP server.
+
+5. www.tar.gz
    www folder of httpd, add to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
+   for example
 ```shell
 busybox-alt httpd -p 8080 -h /www
 ```
 
-5. How to enable
+6. How to enable
    Wire out the UART TTL, login with root/09qjuS@3.
 ```shell
 echo WITH_TELNET=y >> /etc/.config
