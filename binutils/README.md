@@ -6,7 +6,6 @@ The repository includes the following feature.
 
    bettery busybox
 
-
 2. imggrabber
 
    Use to snapshot of camera
@@ -19,27 +18,28 @@ The repository includes the following feature.
 
    RTSP server.
    Notice: For G2, RTSP server only work low resolution and firmware version 3.4.6 and 3.5.7.
-   for Camera G2, open rtsp://[IP]]ch0_1.h264 with vlc etc.
+
+###### for Camera G2, open rtsp://[IP]]ch0_1.h264 with vlc etc.
 ```shell
    h264grabber -f -r LOW &
    RRTSP_RES=1 rRTSPServer &
 ```
-   for Camera G2H, open rtsp://[IP]]/ch0_0.h264 with vlc etc.
+###### for Camera G2H, open rtsp://[IP]]/ch0_0.h264 with vlc etc.
 ```shell
    h264grabber -f &
    rRTSPServer
 ```
    Copy two binary and a script to /system/bin, then add rtsp_start.sh to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
 
-1. www.tar.gz
-   www folder of httpd, add to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
+5. www.tar.gz
+   www folder of httpd, add httpd to /etc/init.d/S90app or use monitor (add configuration to /etc/normal.xml)
    for example
 ```shell
-busybox-alt httpd -p 8080 -h /www
+busybox-armv7l httpd -p 8080 -h /www
 ```
 
 6. How to enable
-   Wire out the UART TTL, login with root/09qjuS@3.
+   See the image to know TX RX of UART and wire out the UART TTL (115200 8N1), login with root/09qjuS@3.
 ```shell
 echo WITH_TELNET=y >> /etc/.config
 
