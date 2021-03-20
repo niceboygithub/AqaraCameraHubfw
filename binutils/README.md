@@ -38,10 +38,27 @@ The repository includes the following feature.
 busybox-armv7l httpd -p 8080 -h /www
 ```
 
-6. How to enable
+6. How to enable telnet without open case and no need solder UART (on G2H only from <a href="https://github.com/mcchas/g2h-camera-mods"> @macchas </a>)
+
+   create a file 'hostname' which its content as below and put it in sdcard. 
+```shell
+#!/bin/sh
+passwd -d root
+echo WITH_TELNET=y >> /etc/.config
+
+```
+Then try to use putty to login to see it work. If it works, you can remove hostname
+
+7. How to enable telnet in hard way (need to solder UART)
+
    See the image to know TX RX of UART and wire out the UART TTL (115200 8N1), login with root/09qjuS@3.
 ```shell
 echo WITH_TELNET=y >> /etc/.config
+
+```
+If you want to remove password, you can enter the below command
+```shell
+passwd -d root
 
 ```
 
