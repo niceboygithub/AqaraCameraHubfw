@@ -1,4 +1,4 @@
-# Aqara Camera Hub G2/G2H (ZNSXJ12LM) Firmware
+# Aqara Camera Hub G2/G2H (ZNSXJ12LM) Firmware, Aqara Hub E1 (ZHWG16LM)
 
 The repository includes the following feature.
 
