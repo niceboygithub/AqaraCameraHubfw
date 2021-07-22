@@ -11,4 +11,12 @@ The repository includes the following feature.
 3. ota bin
 
 
+|*Aqara Hub E1 Versions*||
+|:---:|:---:|
+|version in Mi Home |version in Aqara Home|
+|3.1.3_0026|3.2.4_0028|
+|3.1.3_0042|3.2.4_0042|
+|3.1.3_0066|3.2.4_0066|
+
+
 <a href="https://www.buymeacoffee.com/niceboygithub" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
