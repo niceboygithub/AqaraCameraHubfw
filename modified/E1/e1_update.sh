@@ -18,5 +18,5 @@ echo 3 >/proc/sys/vm/drop_caches; sleep 1; sync
 
 echo "Update root file system"
 /tmp/curl -s -k -L -o /tmp/rootfs.sqfs https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/modified/E1/3.1.5_0020/rootfs_3.1.5_0020_modified.sqfs
-[ "$(md5sum /tmp/rootfs.sqfs)" = "0a7483434693cc822de8b29b345e51c6  /tmp/rootfs.sqfs" ] && fw_update.sh /tmp/rootfs.sqfs
+[ "$(md5sum /tmp/rootfs.sqfs)" = "4f81ef88f1cb70e4fa63decb31e96dd9  /tmp/rootfs.sqfs" ] && fw_update.sh /tmp/rootfs.sqfs
 sync; sync
