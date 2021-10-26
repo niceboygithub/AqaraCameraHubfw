@@ -18,6 +18,7 @@ The repository includes the following feature.
 |3.1.3_0042|3.2.4_0042|
 |3.1.3_0066|3.2.4_0066|
 |3.1.5_0020|3.3.0_0020|
+|3.1.5_0020|3.3.2_0008|
 
 
 <a href="https://www.buymeacoffee.com/niceboygithub" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>

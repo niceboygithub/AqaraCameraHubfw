@@ -10,7 +10,9 @@ REVISION_FILE="/data/utils/fw_manager.revision"
 #          1. update firmware.
 #
 # @author  Niceboy (niceboygithub@github.com)
+# @author  Michael (huiwang.zhu@aqara.com)
 #
+# Copyright (c) 2020~2021 ShenZhen Lumiunited Technology Co., Ltd.
 # All rights reserved.
 #
 
@@ -54,10 +56,11 @@ model=""
 #
 # Version and md5sum
 #
-VERSION="3.1.5_0020"
+VERSION="3.1.5_0020_3.3.2_0008"
+BOOT_MD5SUM=""
 COOR_MD5SUM="59b527769c2ecb2b840967f97b88eaa3"
-KERNEL_MD5SUM="d9b0e0c505bc675543a3400ee2e99103"
-ROOTFS_MD5SUM="4f81ef88f1cb70e4fa63decb31e96dd9"
+KERNEL_MD5SUM="1f4ffda19d665f93e033f2eb210480d2"
+ROOTFS_MD5SUM="7303fdd1eea4e9fe6aa2dd1ea7664f3b"
 
 #
 # Enable debug, 0/1.
@@ -119,6 +122,20 @@ convert_str2int()
     done
 
     echo ${sum}
+}
+
+wait_property_svr_ok()
+{
+    for i in `seq 20`;
+    do
+        sys_name=`agetprop ro.sys.name`
+        if [ x"$sys_name" != x ];then
+            echo "psvr ok,wait=$i"
+            break;
+        fi
+        sleep 0.1
+        echo "wait pro svr"
+    done
 }
 
 #
@@ -320,14 +337,25 @@ update_get_packages()
     local sign="$3"
 
     echo "Get packages, please wait..."
-    /tmp/curl -s -k -L -o /tmp/coor.bin https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/original/E1/${VERSION}/Network-Co-Processor.ota
-    [ "$(md5sum /tmp/coor.bin)" != "${COOR_MD5SUM}  /tmp/coor.bin" ] && return 1
+    if [ "x${BOOT_MD5SUM}" != "x" ]; then
+        /tmp/curl -s -k -L -o /tmp/boot.bin https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/original/E1/${VERSION}/boot.bin
+        [ "$(md5sum /tmp/boot.bin)" != "${BOOT_MD5SUM}  /tmp/boot.bin" ] && return 1
+    fi
 
-    /tmp/curl -s -k -L -o /tmp/kernel https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/original/E1/${VERSION}/kernel_${VERSION}
-    [ "$(md5sum /tmp/kernel)" != "${KERNEL_MD5SUM}  /tmp/kernel" ] && return 1
+    if [ "x${COOR_MD5SUM}" != "x" ]; then
+        /tmp/curl -s -k -L -o /tmp/coor.bin https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/original/E1/${VERSION}/Network-Co-Processor.ota
+        [ "$(md5sum /tmp/coor.bin)" != "${COOR_MD5SUM}  /tmp/coor.bin" ] && return 1
+    fi
 
-    /tmp/curl -s -k -L -o /tmp/rootfs.sqfs https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/modified/E1/${VERSION}/rootfs_${VERSION}_modified.sqfs
-    [ "$(md5sum /tmp/rootfs.sqfs)" != "${ROOTFS_MD5SUM}  /tmp/rootfs.sqfs" ] && return 1
+    if [ "x${KERNEL_MD5SUM}" != "x" ]; then
+        /tmp/curl -s -k -L -o /tmp/kernel https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/original/E1/${VERSION}/kernel_${VERSION}
+        [ "$(md5sum /tmp/kernel)" != "${KERNEL_MD5SUM}  /tmp/kernel" ] && return 1
+    fi
+
+    if [ "x${ROOTFS_MD5SUM}" != "x" ]; then
+        /tmp/curl -s -k -L -o /tmp/rootfs.sqfs https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main/modified/E1/${VERSION}/rootfs_${VERSION}_modified.sqfs
+        [ "$(md5sum /tmp/rootfs.sqfs)" != "${ROOTFS_MD5SUM}  /tmp/rootfs.sqfs" ] && return 1
+    fi
 
     echo "Got package done"
     return 0
@@ -417,6 +445,7 @@ update_start()
     local coor_bin_=/data/ota-files/$coor_bin_name
 
     # Update IR-Controller firmware.
+    echo "===Update IR-Controller==="
     if [ -f "$irctrl_bin_" ]; then
         if [ "$platform" = "miot" ]; then
             asetprop sys.app_monitor_delay 60
@@ -430,6 +459,7 @@ update_start()
     fi
 
     # Update zigbee-coordinator firmware.
+    echo "===Update zigbee-coordinator==="
     if [ -f "$zbcoor_bin_" ]; then
         mv $zbcoor_bin_ $coor_bin_; sync
         for retry in `seq 3`
@@ -445,7 +475,26 @@ update_start()
         rm -f "$coor_bin_"
     fi
 
+    # Update uboot.
+    echo "===Update uboot==="
+    for cnt in `seq 4`
+    do
+    if [ -f "$boot_bin_" ];then
+        flash_erase /dev/mtd0 0 0
+        /bin/nandwrite -p /dev/mtd0 $boot_bin_; sync; sleep 0.4
+        /bin/nanddump -s 0x0 -l 0x1 -f /tmp/boot_head -p /dev/mtd0
+        cat /tmp/boot_head | awk -F ':' '{print $2}' >> /tmp/boot_head0
+
+        hexdump -n 2048 -e '16/1 "%02x" "\n"' $boot_bin_ >> /tmp/boot_head1
+        result=`diff -w /tmp/boot_head0 /tmp/boot_head1`
+        rm -f /tmp/boot_head0; rm -f /tmp/boot_head1; rm -f /tmp/boot_head
+        if [ "$result" = "" ];then break; fi
+   fi
+   done
+   #if [ $cnt -eq 4 ];then return 1; fi
+
     # Update kernel.
+    echo "===Update kernel==="
     KERNEL_PARTITION=$(get_kernel_partitions)
     for cnt in `seq 4`
     do
@@ -472,6 +521,7 @@ update_start()
    if [ $cnt -eq 4 ];then return 1; fi
 
     # Update rootfs.
+    echo "===Update rootfs==="
     ROOTFS_PARTITION=$(get_rootfs_partitions)
     for cnt in `seq 4`
     do
@@ -495,6 +545,7 @@ update_start()
     done
 
     if [ $cnt -eq 4 ];then return 1; fi
+    echo "===Update ALL Success==="
 
     return 0
 }
@@ -594,6 +645,8 @@ updater()
 initial()
 {
     local exit_flag=1
+
+    wait_property_svr_ok
 
     # Is another script running?
     for i in 2 3 1 0; do
