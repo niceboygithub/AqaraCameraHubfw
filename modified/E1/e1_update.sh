@@ -56,11 +56,11 @@ model=""
 #
 # Version and md5sum
 #
-VERSION="3.1.5_0020_3.3.2_0008"
-BOOT_MD5SUM=""
+VERSION="3.1.5_0020_3.3.2_0009"
+BOOT_MD5SUM="55cdaf801c2ac6af709fcfdf61decb5e"
 COOR_MD5SUM="59b527769c2ecb2b840967f97b88eaa3"
 KERNEL_MD5SUM="1f4ffda19d665f93e033f2eb210480d2"
-ROOTFS_MD5SUM="7303fdd1eea4e9fe6aa2dd1ea7664f3b"
+ROOTFS_MD5SUM="3d3d13620f621329cda669ede8e0e8e8"
 
 #
 # Enable debug, 0/1.
@@ -293,6 +293,7 @@ update_prepare()
 
     firmwares_="$fws_dir_/lumi_fw.tar"
 
+    boot_bin_="$ota_dir_/boot.bin"
     kernel_bin_="$ota_dir_/kernel"
     rootfs_bin_="$ota_dir_/rootfs.sqfs"
 
@@ -396,9 +397,18 @@ update_before_start()
 {
     local platform="$1"
 
-    mv /tmp/coor.bin "$ota_dir_"
-    mv /tmp/kernel "$ota_dir_"
-    mv /tmp/rootfs.sqfs "$ota_dir_"
+    if [ -f "/tmp/boot.bin" ]; then
+        mv /tmp/boot.bin "$ota_dir_"
+    fi
+    if [ -f "/tmp/coor.bin" ]; then
+        mv /tmp/coor.bin "$ota_dir_"
+    fi
+    if [ -f "/tmp/kernel" ]; then
+        mv /tmp/kernel "$ota_dir_"
+    fi
+    if [ -f "/tmp/rootfs.sqfs" ]; then
+        mv /tmp/rootfs.sqfs "$ota_dir_"
+    fi
 }
 
 
