@@ -31,13 +31,6 @@ OPTIONS="-h;-u"
 PLATFORMS="-a;-m"
 
 #
-# Factory operations.
-# -s: check sign.
-# -n: ignore sign.
-#
-UPDATER="-s;-n"
-
-#
 # Default platform.
 # Must in aiot;miot.
 #
@@ -56,11 +49,11 @@ model=""
 #
 # Version and md5sum
 #
-VERSION="3.1.5_0020_3.3.2_0009"
+VERSION="3.1.6_0001"
 BOOT_MD5SUM="55cdaf801c2ac6af709fcfdf61decb5e"
 COOR_MD5SUM="59b527769c2ecb2b840967f97b88eaa3"
-KERNEL_MD5SUM="1f4ffda19d665f93e033f2eb210480d2"
-ROOTFS_MD5SUM="3d3d13620f621329cda669ede8e0e8e8"
+KERNEL_MD5SUM="cc56ff421226f6961618fe8b5cceae3b"
+ROOTFS_MD5SUM="6d1cb97b598c5737d24e89f59ce50b73"
 
 #
 # Enable debug, 0/1.
@@ -676,6 +669,11 @@ initial()
     sync
 
     green_echo "type: $product, model: $model"
+
+    if [ "$product" != "lumi.gateway.aqcn02" ]; then
+        red_echo "This is not supported E1 and exit!"
+        exit 1
+    fi
 }
 
 #
