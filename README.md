@@ -1,4 +1,4 @@
-# Aqara Camera Hub G2/G2H (ZNSXJ12LM), Aqara Hub E1 (ZHWG16LM), Aqara Gateway M1S (ZHWG20LM) Firmware
+# Aqara Camera Hub G2/G2H (ZNSXJ12LM), Aqara Hub E1 (ZHWG16LM), Aqara Gateway M1S (ZHWG20LM), Aqara Camera G3 (ZNSXJ13LM) Firmware
 
 The repository includes the following feature.
 
@@ -20,6 +20,7 @@ The repository includes the following feature.
 |3.1.5_0020|3.3.0_0020|
 |3.1.5_0020|3.3.2_0008|
 |3.1.6_0001|3.3.4_0019|
+|4.0.1_0001|3.3.6_0027|
 
 
 |*Aqara Gateway M1S 2022 Versions*||
