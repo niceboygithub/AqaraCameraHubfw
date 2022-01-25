@@ -27,5 +27,6 @@ The repository includes the following feature.
 |:---:|:---:|
 |version in Mi Home |version in Aqara Home|
 |3.3.4_0005|3.3.6_0001|
+|3.3.4_0005|3.3.6_0004|
 
 <a href="https://www.buymeacoffee.com/niceboygithub" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
