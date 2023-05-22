@@ -58,12 +58,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.0.1_0004_3.5.2_0010"
+VERSION="4.0.1_0004_3.5.2_0016"
 BOOT_MD5SUM=""
 COOR_MD5SUM="59b527769c2ecb2b840967f97b88eaa3"
-KERNEL_MD5SUM="d0248864481c6e605c3257f4ec4ee9f3"
-ROOTFS_MD5SUM="34754a58c2040f3639b67e5c59c9a314"
-MODIFIED_ROOTFS_MD5SUM="0a5733ba0933b52dec60d4da156a5760"
+KERNEL_MD5SUM="ea40d54734295428110e23727908e00c"
+ROOTFS_MD5SUM="5103788f1fc8fd403f3b758e505594f0"
+MODIFIED_ROOTFS_MD5SUM="b6c39869d4769629e52625c7d3075146"
 
 FW_TYPE=1
 #
@@ -162,6 +162,7 @@ stop_aiot()
     local a=0; local p=0; local z=0
     local l=0; #host
     local h=0; #ha_lanbox
+    local t=0;
 
     match_substring "$1" "d"; d=$?
     match_substring "$1" "m"; m=$?
@@ -171,8 +172,9 @@ stop_aiot()
     match_substring "$1" "z"; z=$?
     match_substring "$1" "l"; l=$?
     match_substring "$1" "h"; h=$?
+    match_substring "$1" "t"; t=$?
 
-    green_echo "d:$d, m:$m, b:$b, a:$a, p:$p, z:$z, l:$l, h:$h"
+    green_echo "d:$d, m:$m, b:$b, a:$a, p:$p, z:$z, l:$l, h:$h, t:$t"
 
     # Stop monitor.
     killall -9 app_monitor.sh
@@ -182,6 +184,7 @@ stop_aiot()
     #
     # Send a signal to programs.
     #
+    if [ $t -eq 0 ]; then killall ha_matter        ;fi
     if [ $d -eq 0 ]; then killall ha_driven        ;fi
     if [ $m -eq 0 ]; then killall ha_master        ;fi
     if [ $b -eq 0 ]; then killall ha_basis         ;fi
@@ -196,6 +199,7 @@ stop_aiot()
     #
     # Force to kill programs.
     #
+    if [ $t -eq 0 ]; then killall -9 ha_matter        ;fi
     if [ $d -eq 0 ]; then killall -9 ha_driven        ;fi
     if [ $m -eq 0 ]; then killall -9 ha_master        ;fi
     if [ $b -eq 0 ]; then killall -9 ha_basis         ;fi
@@ -468,6 +472,21 @@ set_rootfs_partitions(){
     fi
 }
 
+set_def_env(){
+    /etc/fw_setenv mtdparts 'mtdparts=nand0:1536k@1280k(BOOT0),1536k(BOOT1),384k(ENV),128k(KEY_CUST),5m(KERNEL),5m(KERNEL_BAK),16m(rootfs),16m(rootfs_bak),2m(RES),-(UBI)'
+    /etc/fw_setenv bootargs "ubi.mtd=UBI,2048 root=/dev/mtdblock6 rootfstype=squashfs ro init=/linuxrc LX_MEM=0x3FE0000 mma_heap=mma_heap_name0,miu=0,sz=0x0000000 cma=2M mmap_reserved=fb,miu=0,sz=0x300000,max_start_off=0x3300000,max_end_off=0x3600000 mtdparts=nand0:1536k@1280k(BOOT0),1536k(BOOT1),384k(ENV),128k(KEY_CUST),5m(KERNEL),5m(KERNEL_BAK),16m(rootfs),16m(rootfs_bak),2m(RES),-(UBI)"
+    /etc/fw_setenv bootcmd "nand read.e 0x22000000 KERNEL 0x500000; dcache on ; bootlogo 0 0 0 0; bootm 0x22000000;nand read.e 0x22000000 KERNEL_BAK 0x500000; dcache on ; bootm 0x22000000"
+}
+
+check_env(){
+    local err_crc=`/etc/fw_printenv 2>&1 | grep "Bad CRC"`
+    if [ x"$err_crc" != x ];then
+        red_echo "last env error,set default env"
+        set_def_env
+    else
+        echo "env right"
+    fi
+}
 
 update_start()
 {
