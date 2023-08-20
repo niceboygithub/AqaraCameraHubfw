@@ -58,12 +58,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.0.2_0015.0004"
+VERSION="4.0.4_0008.0004"
 BOOT_MD5SUM=""
 COOR_MD5SUM="1071c82bd15e17f29e396409f9534baf"
-KERNEL_MD5SUM="471e45b3f17e564f89e980ea9b5486e0"
-ROOTFS_MD5SUM="3b9958d67cacfac4ad699ed8a5830713"
-MODIFIED_ROOTFS_MD5SUM="fb12bec35a3903a643cded60d8f90efa"
+KERNEL_MD5SUM="2dc60c6ae3d95f42e8dd115463a5c33a"
+ROOTFS_MD5SUM="577dcb1d4c6b260e2d2a8101552db1f0"
+MODIFIED_ROOTFS_MD5SUM="7bf0a12cfc942dda93514da47334c913"
 BTBL_MD5SUM=""
 BTAPP_MD5SUM=""
 IRCTRL_MD5SUM=""
@@ -396,7 +396,7 @@ update_prepare() {
 }
 
 update_get_packages() {
-    local simple_model="M2poe"
+    local simple_model="M2PoE"
     local platform="$1"
 
     local path="$2"
@@ -890,7 +890,7 @@ updater() {
     update_get_packages "$platform" "$path" "$sign"
     if [ $? -ne 0 ]; then
         update_failed "$platform" "getpack failed!" "true"
-        ota_recor_nor
+#        ota_recor_nor
         return 1
     fi
 
