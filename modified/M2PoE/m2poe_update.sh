@@ -58,12 +58,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.0.6_0011.0004"
+VERSION="4.0.8_0008.0010"
 BOOT_MD5SUM=""
-COOR_MD5SUM="1071c82bd15e17f29e396409f9534baf"
-KERNEL_MD5SUM="3ffe34c09c0fad903b167dc8a18ba9a8"
-ROOTFS_MD5SUM="4ad86ebf0d707c7678ca49c17f63b2a4"
-MODIFIED_ROOTFS_MD5SUM="0c0e0f8b84271d07c12b0a6bc44a25a2"
+COOR_MD5SUM="8c45836f99ff6baa1289c6368427d73b"
+KERNEL_MD5SUM="539dfb60173d44357904836cbff3cc06"
+ROOTFS_MD5SUM="319b06a8fea2a328caf55a5007b986ff"
+MODIFIED_ROOTFS_MD5SUM="6062e78e0ca9b81395cb4da24f19536d"
 BTBL_MD5SUM=""
 BTAPP_MD5SUM=""
 IRCTRL_MD5SUM=""
@@ -496,7 +496,7 @@ update_before_start() {
         mv /tmp/boot.bin "$ota_dir_"
     fi
     if [ -f "/tmp/coor.bin" ]; then
-        mv /tmp/coor.bin "$ota_dir_"
+        mv /tmp/coor.bin "$ota_dir_"/Network-Co-Processor.ota
     fi
     if [ -f "/tmp/kernel" ]; then
         mv /tmp/kernel "$ota_dir_"
@@ -620,7 +620,7 @@ coordinator_ota() {
     coor_bin_="$coor_dir_/Network-Co-Processor.ota"
     coor_bin_bk_="/data/Network-Co-Processor.ota"
 
-    if [ "$CLOUD_VER" != "$LOCAL_VER" ]; then
+    if [ "$g_zbcoor_need_ver" != "$LOCAL_VER" ]; then
         if [ -f "$coor_bin_" ]; then
             cp -f "$coor_bin_" "$coor_bin_bk_"
             zigbee_msnger zgb_ota "$coor_bin_"
@@ -890,7 +890,6 @@ updater() {
     update_get_packages "$platform" "$path" "$sign"
     if [ $? -ne 0 ]; then
         update_failed "$platform" "getpack failed!" "true"
-#        ota_recor_nor
         return 1
     fi
 
@@ -906,6 +905,32 @@ updater() {
     return 0
 }
 
+check_zigbee_ic() {
+    local zb_platform=$(agetprop persist.sys.zb_chip)
+    if [ x"$zb_platform" = x ]; then
+
+        local mg21=false
+        get_zbic
+        if [ $? -eq 28 ]; then
+            echo "is p7"
+            asetprop persist.sys.zb_chip "0028"
+            ZIGBEE_IC="Ti2652"
+        else
+            echo "unknown ic,set to mg21"
+            asetprop persist.sys.zb_chip "0021"
+            ZIGBEE_IC="MG21"
+        fi
+
+    else
+
+        if [ "$zb_platform" = "$CC2652P1" ] || [ "$zb_platform" = "$CC2652P7" ] || [ "$zb_platform" = "$CC1352P7" ]; then
+            ZIGBEE_IC="Ti2652"
+        else
+            ZIGBEE_IC="MG21"
+        fi
+    fi
+}
+
 #
 # Initial params.
 #
@@ -914,6 +939,7 @@ initial()
     local exit_flag=1
 
     wait_property_svr_ok
+    check_zigbee_ic
 
     # Is another script running?
     for i in 2 3 1 0; do
