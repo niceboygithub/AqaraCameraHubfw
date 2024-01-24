@@ -8,7 +8,7 @@ What is the modification in the customzied firmware?
 
 The method:
 1. Remove the power of the gateway.
-2. Copy the [linux.bin and rootfs.bin](https://github.com/niceboygithub/AqaraCameraHubfw/tree/main/modified/M2_2022) to USB disk in FAT32 format.
+2. Copy the [linux.bin and rootfs.bin](https://github.com/niceboygithub/AqaraCameraHubfw/tree/main/modified/M2PoE/M2_2022) to USB disk in FAT32 format.
 3. Plug-in the USB disk to the gateway.
 4. Press the front button of the gateway without release
 5. Plug-in the power cord to the gateway
