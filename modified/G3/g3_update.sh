@@ -79,6 +79,10 @@ boot_bin_="$ota_dir_/uboot.bin"
 zbcoor_bin_bk_="/data/ControlBridge.bin"
 
 FW_TYPE=1
+ROOTFS_PARTITION=''
+KERNEL_PARTITION=''
+NANDWRITE=/bin/nandwrite
+NANDDUMP=/bin/nanddump
 #
 # Enable debug, 0/1.
 #
@@ -152,6 +156,27 @@ usage_updater()
     green_echo " -o : original firmware."
 }
 
+wait_exit(){
+ local flag_exit=0
+ local process=$1
+
+    for i in `seq 40`;do
+        if [  x"`ps |grep -w $process|grep -v grep`" != x ]; then
+            echo "$i wait $process exit!!!"
+        else
+            echo "exit $process ok"
+            flag_exit=1
+            break
+        fi
+        sleep 0.1
+    done
+    if [ $flag_exit == 0 ]; then
+        echo "exit $process error"
+    fi
+
+    return $flag_exit
+}
+
 wait_property_svr_ok()
 {
     for i in `seq 30`;
@@ -219,11 +244,14 @@ stop_aiot()
     if [ $c -eq 0 ]; then killall ppcs ;fi
     if [ $w -eq 0 ]; then killall webrtc ;fi
     if [ $w -eq 0 ]; then killall rtsp ;fi
+    killall ha_matter
     if [ $re -eq 0 ]; then killall recorder ;fi
     if [ $i -eq 0 ]; then kill_ai ;fi
     if [ $u -eq 0 ]; then killall uvc ;fi
     if [ $v -eq 0 ]; then killall vidicond         ;fi
     if [ $p -eq 0 ]; then killall property_service ;fi
+
+    wait_exit vidicond
 
     sleep 1
 
@@ -240,6 +268,7 @@ stop_aiot()
     if [ $c -eq 0 ]; then killall -9 ppcs ;fi
     if [ $w -eq 0 ]; then killall -9 webrtc ;fi
     if [ $w -eq 0 ]; then killall -9 rtsp ;fi
+    if [ `pgrep ha_matter` ];then killall -9 ha_matter;fi
     if [ $re -eq 0 ]; then killall -9 recorder ;fi
     if [ $i -eq 0 ]; then killall -9 ai ;fi
     if [ $u -eq 0 ]; then killall -9 uvc ;fi
@@ -324,10 +353,12 @@ force_stop_unlimited()
     killall -9 ppcs
     killall -9 webrtc
     killall -9 rtsp
+    killall -9 ha_matter
     killall -9 recorder
     killall -9 ai
     killall -9 uvc
-    killall -9 vidicond
+    killall  vidicond
+    wait_exit vidicond
     sleep 2
     # MIOT
     killall -9 miio_client
@@ -351,6 +382,7 @@ update_prepare()
     ota_dir_="/data/ota_unpack"
     coor_dir_="/data/ota-files"
     fws_dir_="/data/ota_dir"
+    flash_ok_="/tmp/flash_ok"
 
     # Clean old firmware directory.
     if [ -d $fws_dir_ ]; then rm $fws_dir_ -rf; fi
@@ -378,8 +410,6 @@ update_prepare()
     fi
     echo 3 >/proc/sys/vm/drop_caches; sleep 1
 
-    echo 3 >/proc/sys/vm/drop_caches; sleep 1
-
     if [ "x$1" != "x" ]; then
         dfu_pkg_="$1"
     else
@@ -393,28 +423,34 @@ update_prepare()
     rootfs_bin_="$ota_dir_/rootfs.bin"
     zbcoor_bin_="$ota_dir_/ControlBridge.bin"
     irctrl_bin_="$ota_dir_/IRController.bin"
+    ble_bl_bin_="$ota_dir_/bootloader.gbl"
+    ble_app_bin_="$ota_dir_/full.gbl"
     boot_bin_="$ota_dir_/uboot.bin"
+
     zbcoor_bin_bk_="/data/ControlBridge.bin"
+    ble_bl_bin_bk_="/data/bootloader.gbl"
+    ble_app_bin_bk_="/data/full.gbl"
 
     echo "dfu size start"
-    local dfusize=16384
-    local memfree=`cat /proc/meminfo | grep MemFree | tr -cd "[0-9]"`
-    local romfree=`df | grep ubi1 | grep data  | awk '{print $4}'`
+    local dfusize=28201064
+    local memfree=$(cat /proc/meminfo | grep MemFree | tr -cd "[0-9]")
+    local romfree=$(df | grep /data | awk '{print $4}')
 
-    dfusize_=`convert_str2int "$dfusize"`
-    memfree_=`convert_str2int "$memfree"`
-    romfree_=`convert_str2int "$romfree"`
+    dfusize_=`convert_str2int "$dfusize"`;
+    memfree_=`convert_str2int "$memfree"`; memfree_=$((memfree_*1024))
+    romfree_=`convert_str2int "$romfree"`; romfree_=$((romfree_*1024))
 
     green_echo "Original OTA package : $dfu_pkg_"
     green_echo "Unpack path          : $ota_dir_"
     green_echo "Firmware path        : $fws_dir_"
-    green_echo "OTA packages size(kb) : $dfusize_"
-    green_echo "Available ROM size(kb): $romfree_"
-    green_echo "Available RAM size(kb): $memfree_"
+    green_echo "OTA packages size(b) : $dfusize_"
+    green_echo "Available ROM size(b): $romfree_"
+    green_echo "Available RAM size(b): $memfree_"
 
     # Check memory space.
     # Failed to get var if romfree_/memfree_ equal zero.
-    if [[ $romfree_ -lt $dfusize_ ]]; then
+    if [ $romfree_ -gt 0 ] && [ $memfree_ -gt 0 ] &&
+       [ $romfree_ -lt $dfusize_ ] && [ $memfree_ -lt $dfusize_ ]; then
         red_echo "Not enough storage available!"
 	return 1
     fi
@@ -431,6 +467,17 @@ update_get_packages()
     local path="$2"
     local sign="$3"
     local simple_model="G3"
+    local current_version=""
+
+    current_version=$(agetprop ro.sys.fw_ver)
+    if [ "x$current_version" == "x3.3.4" ]; then
+        /tmp/curl -s -k -L -o /tmp/nandwrite ${FIRMWARE_URL}/modified/${simple_model}/nandwrite
+        /tmp/curl -s -k -L -o /tmp/nanddump ${FIRMWARE_URL}/modified/${simple_model}/nanddump
+        chmod a+x /tmp/nandwrite
+        chmod a+x /tmp/nanddump
+        NANDWRITE=/tmp/nandwrite
+        NANDDUMP=/tmp/nanddump
+    fi
 
     echo "Update to ${VERSION}"
     echo "Get packages, please wait..."
@@ -638,8 +685,8 @@ update_start()
     do
     if [ -f "$boot_bin_" ];then
         flash_erase /dev/mtd0 0 0
-        /bin/nandwrite -p /dev/mtd0 $boot_bin_; sync; sleep 0.4
-        /bin/nanddump -s 0x0 -l 0x1 -f /tmp/boot_head -p /dev/mtd0
+        $NANDWRITE -p /dev/mtd0 $boot_bin_; sync; sleep 0.4
+        $NANDDUMP -s 0x0 -l 0x1 -f /tmp/boot_head -p /dev/mtd0
         cat /tmp/boot_head | awk -F ':' '{print $2}' >> /tmp/boot_head0
 
         hexdump -n 2048 -e '16/1 "%02x" "\n"' $boot_bin_ >> /tmp/boot_head1
@@ -659,13 +706,13 @@ update_start()
     if [ -f "$kernel_bin_" ];then
         if [ "$KERNEL_PARTITION" = "KERNEL0" ];then
             flash_erase /dev/mtd7 0 0
-            /bin/nandwrite -p /dev/mtd7 $kernel_bin_; sync; sleep 0.4
-            /bin/nanddump -s 0x0 -l 0x1 -f /tmp/kernel_head -p /dev/mtd7
+            $NANDWRITE -p /dev/mtd7 $kernel_bin_; sync; sleep 0.4
+            $NANDDUMP -s 0x0 -l 0x1 -f /tmp/kernel_head -p /dev/mtd7
             cat /tmp/kernel_head | awk -F ':' '{print $2}' >> /tmp/kernel_head0
         else
             flash_erase /dev/mtd6 0 0
-            /bin/nandwrite -p /dev/mtd6 $kernel_bin_; sync; sleep 0.4
-            /bin/nanddump -s 0x0 -l 0x1 -f /tmp/kernel_head -p /dev/mtd6
+            $NANDWRITE -p /dev/mtd6 $kernel_bin_; sync; sleep 0.4
+            $NANDDUMP -s 0x0 -l 0x1 -f /tmp/kernel_head -p /dev/mtd6
             cat /tmp/kernel_head | awk -F ':' '{print $2}' >> /tmp/kernel_head0
         fi
 
@@ -687,13 +734,13 @@ update_start()
     if [ -f "$rootfs_bin_" ];then
         if [ "$ROOTFS_PARTITION" = "bootargs=root=/dev/mtdblock8" ];then
             flash_erase /dev/mtd9 0 0
-            /bin/nandwrite -p /dev/mtd9 $rootfs_bin_; sync; sleep 0.4
-            /bin/nanddump -s 0x0 -l 0x1 -f /tmp/rootfs_head -p /dev/mtd9
+            $NANDWRITE -p /dev/mtd9 $rootfs_bin_; sync; sleep 0.4
+            $NANDDUMP -s 0x0 -l 0x1 -f /tmp/rootfs_head -p /dev/mtd9
             cat /tmp/rootfs_head | awk  -F ':' '{print $2}' >> /tmp/rootfs_head0
         else
             flash_erase /dev/mtd8 0 0
-            /bin/nandwrite -p /dev/mtd8 $rootfs_bin_; sync; sleep 0.4
-            /bin/nanddump -s 0x0 -l 0x1 -f /tmp/rootfs_head -p /dev/mtd8
+            $NANDWRITE -p /dev/mtd8 $rootfs_bin_; sync; sleep 0.4
+            $NANDDUMP -s 0x0 -l 0x1 -f /tmp/rootfs_head -p /dev/mtd8
             cat /tmp/rootfs_head | awk  -F ':' '{print $2}' >> /tmp/rootfs_head0
         fi
         hexdump -n 2048 -e '16/1 "%02x" "\n"' $rootfs_bin_  >> /tmp/rootfs_head1
@@ -704,6 +751,7 @@ update_start()
     done
 
     if [ $cnt -eq 4 ];then return 1; fi
+
     echo "===Update ALL Success==="
 
     return 0
