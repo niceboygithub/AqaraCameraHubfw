@@ -64,12 +64,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.0.8_0010.0008"
+VERSION="4.1.0_0005.0008"
 BOOT_MD5SUM=""
 COOR_MD5SUM="eee18c6a0c4d6d96598d4cc0bfb52008"
-KERNEL_MD5SUM="53101025ba5b4480996f588dd489cd8a"
-ROOTFS_MD5SUM="52c45144118c67e8a38bb9efe8050d07"
-MODIFIED_ROOTFS_MD5SUM="f58ad4c44840e857dab540fbef42b4b1"
+KERNEL_MD5SUM="0627ee387d68ca5663f8265618dca84b"
+ROOTFS_MD5SUM="ee84104b351482eef6860daa6c3a8d38"
+MODIFIED_ROOTFS_MD5SUM="17142fcff7e27fc95ae8957c3f553e85"
 
 kernel_bin_="$ota_dir_/linux.bin"
 rootfs_bin_="$ota_dir_/rootfs.bin"
