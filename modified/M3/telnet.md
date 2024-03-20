@@ -1,3 +1,6 @@
+# Note
+Lumi already fix the vulnerability, the M3 which production day  after 2024.1 can not use this method
+
 # Enable Telnet of Aqara Gateway M3
 
 The easy way to enable telnet of Aqara Gateway M3 is that flash customized firmware.
