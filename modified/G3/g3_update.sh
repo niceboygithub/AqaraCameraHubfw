@@ -64,12 +64,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.1.0_0005.0008"
+VERSION="4.1.0_0011.0008"
 BOOT_MD5SUM=""
 COOR_MD5SUM="eee18c6a0c4d6d96598d4cc0bfb52008"
-KERNEL_MD5SUM="0627ee387d68ca5663f8265618dca84b"
-ROOTFS_MD5SUM="ee84104b351482eef6860daa6c3a8d38"
-MODIFIED_ROOTFS_MD5SUM="17142fcff7e27fc95ae8957c3f553e85"
+KERNEL_MD5SUM="46dad6464fdb11b14148fc36334345a6"
+ROOTFS_MD5SUM="1207e1709077a65d806e3e0cbe126b17"
+MODIFIED_ROOTFS_MD5SUM="92e7efa16df48f9e20d654cd9933abf7"
 
 kernel_bin_="$ota_dir_/linux.bin"
 rootfs_bin_="$ota_dir_/rootfs.bin"
@@ -470,7 +470,7 @@ update_get_packages()
     local current_version=""
 
     current_version=$(agetprop ro.sys.fw_ver)
-    if [ "x$current_version" == "x3.3.4" ]; then
+    if [ "x$current_version" == "x3.3.4" ] || [ "x$current_version" == "x3.3.2" ]; then
         /tmp/curl -s -k -L -o /tmp/nandwrite ${FIRMWARE_URL}/modified/${simple_model}/nandwrite
         /tmp/curl -s -k -L -o /tmp/nanddump ${FIRMWARE_URL}/modified/${simple_model}/nanddump
         chmod a+x /tmp/nandwrite
