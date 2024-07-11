@@ -36,6 +36,7 @@ The repository includes the following feature.
 |4.0.4_0006|4.0.8_0008|
 |4.0.4_0006|4.1.0_0003|
 |4.0.4_0006|4.1.4_0008|
+|4.0.4_0006|4.1.6_0018|
 
 |*Aqara Gateway M1S 2022 Versions*||
 |:---:|:---:|
