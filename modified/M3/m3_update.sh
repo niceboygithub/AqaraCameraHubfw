@@ -49,15 +49,15 @@ _ota_bak_dir=/data/ota-bak
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.1.7_0013.0013"
+VERSION="4.1.8_0016.0013"
 COOR_FILENAME="Network-Co-Processor_115200_MG21_0013_20240705_6DF00C.ota"
 OT_RCP_SPI_OTA_FILENAME="ot-rcp-spi-ota-v0010.gbl"
 BOOT_MD5SUM=""
 COOR_MD5SUM="344c0c4c51f169996c5f9ea9ac6df00c"
 OT_RCP_MD5SUM="572fd5220412a822db18fc93825eea9c"
-KERNEL_MD5SUM="881fe77528c788f3681a3d442659f056"
-ROOTFS_MD5SUM="11ccc600ac02684f217571547a363113"
-MODIFIED_ROOTFS_MD5SUM="53556cfd6819a6d9497b7e7a3f970644"
+KERNEL_MD5SUM="ae0f8158951c3338f1da40d8de4b1515"
+ROOTFS_MD5SUM="9ce72a56a11e8cb52c5618587f392424"
+MODIFIED_ROOTFS_MD5SUM="d786877171e4e9c27677abb0e0941e61"
 BTBL_MD5SUM=""
 BTAPP_MD5SUM=""
 IRCTRL_MD5SUM=""
@@ -654,10 +654,17 @@ coordinator_ota() {
     local CLOUD_VER=$(basename $path | cut -d '_' -f 4)
     local LOCAL_VER=$(agetprop persist.sys.zb_ver)
     local bak_file=$_ota_bak_dir/$(basename $path)
+    local force_ota=false
 
     echo "cloud ver:$CLOUD_VER,local :$LOCAL_VER"
+    zigbee_msnger get_zgb_ver
+    if [ $? -ne 0 ]; then
+        red_echo "get zgb ver fail"
+        force_ota=true
+        asetprop persist.sys.zb_ver
+    fi
 
-    if [ "$CLOUD_VER" != "$LOCAL_VER" ]; then
+    if [ "$CLOUD_VER" != "$LOCAL_VER" ] || [ $force_ota = "true" ]; then
         echo "zigbee_msnger zgb_ota $path"
         mkdir -p $_ota_bak_dir
         cp $path $bak_file -fv
