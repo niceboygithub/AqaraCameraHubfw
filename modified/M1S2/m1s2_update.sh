@@ -50,6 +50,7 @@ DEFAULT_PLATFORM="aiot"
 MODEL_FILE="/data/utils/fw_manager.model"
 IRCTRL_BIN_BK_="/data/IRController.bin"
 _ble_ota_bak_file="/data/ble_ota_bak.bin"
+_ota_bak_dir=/data/ota-bak
 
 #
 # Product model, support list: AC_P3, AH_M1S, AH_M2.
@@ -66,12 +67,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.1.6_0018.0012"
+VERSION="4.1.9_0019.0013"
 BOOT_MD5SUM=""
-COOR_MD5SUM="71f87932faee4626f849d2e622ef4011"
-KERNEL_MD5SUM="809ad1b10ebb5ac2bb515812e085d862"
-ROOTFS_MD5SUM="4caafabcb2406a7284a69d2ca5e311a9"
-MODIFIED_ROOTFS_MD5SUM="207af65e564dee503ee6d317069e9d9b"
+COOR_MD5SUM="4a11896b7228b7b5e003d302b883e1a1"
+KERNEL_MD5SUM="1f66b000c2ac2df38e908a87150c850b"
+ROOTFS_MD5SUM="e9fd144f15eec36d43f106c5fd17a1a8"
+MODIFIED_ROOTFS_MD5SUM="e9fe171e4c7c1bffcccbbef061a534b2"
 
 FW_TYPE=1
 #
@@ -477,7 +478,7 @@ update_before_start()
         mv /tmp/boot.bin "$ota_dir_"
     fi
     if [ -f "/tmp/coor.bin" ]; then
-        mv /tmp/coor.bin "$ota_dir_"
+        mv /tmp/coor.bin "$ota_dir_"/Network-Co-Processor_115200_MG21_0013.ota
     fi
     if [ -f "/tmp/kernel" ]; then
         mv /tmp/kernel "$ota_dir_"
@@ -486,7 +487,6 @@ update_before_start()
         mv /tmp/rootfs.sqfs "$ota_dir_"
     fi
 }
-
 
 get_kernel_partitions(){
 
@@ -516,7 +516,7 @@ set_rootfs_partitions(){
 
 get_coor_file_ver()
 {
-    ver=`echo $1 | cut -d "_" -f 4`
+    ver=`echo $1 | cut -d "_" -f 4 | cut -d '.' -f 0`
     echo $ver
 }
 
@@ -631,24 +631,57 @@ update_start()
         fi
 
         coor_bin_=$coor_dir_/Network-Co-Processor.ota
+        local force_ota=false
+        zigbee_msnger get_zgb_ver
+        if [ $? -ne 0 ]; then
+            red_echo "get zgb ver fail"
+            force_ota=true
+            asetprop persist.sys.zb_ver
+        fi
 
         local ver=`agetprop persist.sys.zb_ver`
-        if [ "$g_zbcoor_need_ver" = "$ver" ];then
+        if [ "$g_zbcoor_need_ver" = "$ver" ] && [ "$force_ota" = "false" ];then
             echo "same coordinator ver:$ver"
             rm $coor_bin_
         else
-            cp -f "$coor_bin_" "$coor_bin_bk_"
-            echo "update zb:$ver -> $g_zbcoor_need_ver"
-            zigbee_msnger zgb_ota "$coor_bin_"
-            echo "zigbee_msnger zgb_ota $coor_bin_"
-            for retry in `seq 60`
-            do
-                sleep 1
-                # Check result
-                confirm_coor
-                var=$?
-                if [ $var -eq 0 ]; then break; fi
+            mkdir -p $_ota_bak_dir
+            local bak_file=$_ota_bak_dir/$(basename $coor_bin_)
+            cp $coor_bin_ $bak_file -fv
+            sync
+
+            echo " :$ver -> $g_zbcoor_need_ver"
+            local var=1
+
+
+            local cloud=`agetprop persist.sys.cloud`
+            for i in `seq 3`;do
+                if [ ! `pgrep Z3GatewayHost_MQTT` ];then
+                    red_echo "error !!! zb_host exit"
+                    if [ "$cloud" = "aiot" ];then
+                        Z3GatewayHost_MQTT -n 1 -b 115200 -p /dev/ttyS1 -d /data/ -r c > /dev/null 2>&1 &
+                    else
+                        mZ3GatewayHost_MQTT -n 1 -b 115200 -p /dev/ttyS1 -d /data/ -r c > /dev/null 2>&1 &
+                    fi
+                    sleep 1
+                fi
+
+                zigbee_msnger zgb_ota "$coor_bin_"
+                echo "zigbee_msnger zgb_ota $coor_bin_"
+                for retry in `seq 2`;do
+                    sleep 1
+                    # Check result
+                    confirm_coor
+                    var=$?
+                    if [ $var -eq 0 ]; then break; fi
+                done
+
+                if [ $var -eq 0 ]; then
+                    break;
+                else
+                    red_echo "coordinator ota fail,retry"
+                fi
             done
+
 
             if [ $var -eq 1 ]; then
                 return 1
@@ -720,6 +753,9 @@ update_failed()
 
     if [ "$clean" = "true" ]; then update_clean; fi
 
+    if [ ! $(pgrep -f app_monitor.sh) ]; then
+        app_monitor.sh &
+    fi
 }
 
 update_done()
