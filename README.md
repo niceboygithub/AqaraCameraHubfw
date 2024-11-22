@@ -37,11 +37,14 @@ The repository includes the following feature.
 |4.0.4_0006|4.1.0_0003|
 |4.0.4_0006|4.1.4_0008|
 |4.0.4_0006|4.1.6_0018|
+|4.0.4|0006|4.3.0|0004|
 
 |*Aqara Gateway M1S 2022 Versions*||
 |:---:|:---:|
 |version in Mi Home |version in Aqara Home|
 |3.3.4_0005|3.3.6_0001|
 |3.3.4_0005|3.3.6_0004|
+|4.0.6_0003|4.1.9_0019|
+|4.0.6_0003|4.3.0_0004|
 
 <a href="https://www.buymeacoffee.com/niceboygithub" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
