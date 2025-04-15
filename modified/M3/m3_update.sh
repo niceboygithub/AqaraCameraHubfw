@@ -49,15 +49,15 @@ _ota_bak_dir=/data/ota-bak
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.3.4_0012.0013"
+VERSION="4.3.5_0029.0013"
 COOR_FILENAME="Network-Co-Processor_115200_MG21_0013_20240705_6DF00C.ota"
 OT_RCP_SPI_OTA_FILENAME="ot-rcp-spi-ota-v0010.gbl"
 BOOT_MD5SUM=""
 COOR_MD5SUM="344c0c4c51f169996c5f9ea9ac6df00c"
 OT_RCP_MD5SUM="572fd5220412a822db18fc93825eea9c"
-KERNEL_MD5SUM="433e450ff26760edebe0bfc2231879a1"
-ROOTFS_MD5SUM="ca214bea91a4789c677793dc7815d38f"
-MODIFIED_ROOTFS_MD5SUM="cfe5caa9cb966cfb6198952b89071e8a"
+KERNEL_MD5SUM="7b8232620324b408ac54b5a42e894be6"
+ROOTFS_MD5SUM="6291266bbceb9e88a4ad375cc9e475b8"
+MODIFIED_ROOTFS_MD5SUM="4559fc231fab592447017756980785af"
 BTBL_MD5SUM=""
 BTAPP_MD5SUM=""
 IRCTRL_MD5SUM=""
@@ -221,7 +221,7 @@ stop_aiot() {
     local t=0
     local o=0
     local r=0
-	
+
     local ble_supported=$(agetprop persist.sys.ble_supported)
 
     match_substring "$1" "d"
@@ -240,7 +240,7 @@ stop_aiot() {
     s=$?
     match_substring "$1" "x"
     x=$?
-    match_substring "$1" "t"; 
+    match_substring "$1" "t";
     t=$?
     match_substring "$1" "o";
     o=$?
@@ -685,7 +685,7 @@ coordinator_ota() {
                 var=$?
                 if [ $var -eq 0 ]; then break; fi
             done
-            if [ $var -eq 0 ]; then 
+            if [ $var -eq 0 ]; then
                 break;
             else
                 red_echo "coordinator ota fail,retry"
@@ -860,7 +860,7 @@ check_zigbee_ota() {
 
     path=$_ota_bak_dir/$path
     red_echo "retry ota $path"
-   
+
     Z3GatewayHost_MQTT -p /dev/ttyS1 -d /data/ -r c >/dev/null 2>&1 &
     # wait
     zigbee_agent -f /etc/zigbeeAgent.conf > /dev/null 2>&1 &
@@ -1049,7 +1049,7 @@ update_start() {
         red_echo "thread ota fail"
         return 1
     fi
-    
+
     ota_kernel
     if [ $? -eq 1 ]; then
         red_echo "kernel ota fail"
@@ -1176,7 +1176,7 @@ run_submodule_ota() {
     local ble_ota_file=$(find $sub_ota_dir_ -name "ble*.bin")
     local ble_ota_ver=$(echo $ble_ota_file | xargs basename | cut -d '_' -f4)
     local ble_ver=$(agetprop persist.sys.ble_ver)
-   
+
 
     if [ -f $ble_ota_file ] && [ "$ble_ota_ver" != "$ble_ver" ]; then
         ota_ble $ble_ota_file $ble_ota_ver
