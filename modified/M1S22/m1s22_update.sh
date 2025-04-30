@@ -64,12 +64,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.3.4_0012.0022"
+VERSION="4.3.5_0037.0024"
 BOOT_MD5SUM=""
-COOR_MD5SUM="ab9837ba55bfd6603144a9605b2a0c48"
-KERNEL_MD5SUM="d97047adcc5a190ffd764c8d1b167466"
-ROOTFS_MD5SUM="1acab94e60dbd89b88fbe03c788534ce"
-MODIFIED_ROOTFS_MD5SUM="c624b071f87755512870b716dcdd95d2"
+COOR_MD5SUM="b2d02be4142fc439cca4d136bda9b548"
+KERNEL_MD5SUM="cfe438f98da245da244484ce2bc35867"
+ROOTFS_MD5SUM="5fada47b0ce3c05dd1d4b433ba413c13"
+MODIFIED_ROOTFS_MD5SUM="5c7b77736e26b5d8257559c5fa38df06"
 
 #
 # Enable debug, 0/1.
@@ -453,7 +453,7 @@ update_before_start()
         mv /tmp/boot.bin "$ota_dir_"
     fi
     if [ -f "/tmp/coor.bin" ]; then
-        mv /tmp/coor.bin "$ota_dir_"
+        mv /tmp/coor.bin "$ota_dir_"/coor.ota
     fi
     if [ -f "/tmp/kernel" ]; then
         mv /tmp/kernel "$ota_dir_"
