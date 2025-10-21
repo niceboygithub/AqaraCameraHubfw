@@ -67,12 +67,12 @@ model=""
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.3.2_0024.0013"
+VERSION="4.3.8_0014.0013"
 BOOT_MD5SUM=""
 COOR_MD5SUM="344c0c4c51f169996c5f9ea9ac6df00c"
-KERNEL_MD5SUM="7b616f5dcb806641f15b914c32431ab7"
-ROOTFS_MD5SUM="a60af2fccddbc4c1581259e4d3b2ff54"
-MODIFIED_ROOTFS_MD5SUM="ebf54a3dd24912975e362306f4b38d2f"
+KERNEL_MD5SUM="1658ca1a7b3278eb306d73d0912482e1"
+ROOTFS_MD5SUM="43c89edefa08b321deafeb83999211e9"
+MODIFIED_ROOTFS_MD5SUM="7bc596a5d148d28cdf414327ea99e85a"
 
 kernel_bin_="$ota_dir_/linux.bin"
 rootfs_bin_="$ota_dir_/rootfs.bin"
@@ -462,7 +462,7 @@ update_get_packages()
     echo "Get packages, please wait..."
 
     if [ "x${COOR_MD5SUM}" != "x" ]; then
-        /tmp/curl -s -k -L -o /tmp/coor.bin ${FIRMWARE_URL}/original/${simple_model}/${VERSION}/ControlBridge.bin
+        /tmp/curl -s -k -L -o /tmp/coor.bin ${FIRMWARE_URL}/original/${simple_model}/${VERSION}/Network-Co-Processor.ota
         [ "$(md5sum /tmp/coor.bin)" != "${COOR_MD5SUM}  /tmp/coor.bin" ] && return 1
     fi
 
@@ -820,11 +820,11 @@ initial()
 
     # Set ipv4 local reserved ports.
     echo "1883,54322" > /proc/sys/net/ipv4/ip_local_reserved_ports
-    product=`agetprop ro.sys.model`
+    product=`agetprop persist.sys.model`
 
     # Aqara Camer Hub G2HPro.
     if   [ "$product" = "lumi.camera.acn003" ]; then
-        model="AH_G2Pro"
+        model="AH_G2HPro"
     fi
 
     green_echo "type: $product, model: $model"
