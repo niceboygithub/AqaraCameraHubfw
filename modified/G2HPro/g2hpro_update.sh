@@ -72,7 +72,7 @@ BOOT_MD5SUM=""
 COOR_MD5SUM="344c0c4c51f169996c5f9ea9ac6df00c"
 KERNEL_MD5SUM="1658ca1a7b3278eb306d73d0912482e1"
 ROOTFS_MD5SUM="43c89edefa08b321deafeb83999211e9"
-MODIFIED_ROOTFS_MD5SUM="7bc596a5d148d28cdf414327ea99e85a"
+MODIFIED_ROOTFS_MD5SUM="d8fdaf2c6eb11e2c264cb377995c2cde"
 
 kernel_bin_="$ota_dir_/linux.bin"
 rootfs_bin_="$ota_dir_/rootfs.bin"
