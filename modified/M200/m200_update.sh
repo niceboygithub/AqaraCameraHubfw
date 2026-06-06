@@ -70,16 +70,16 @@ debug=1
 # Version and md5sum
 #
 FIRMWARE_URL="https://raw.githubusercontent.com/niceboygithub/AqaraCameraHubfw/main"
-VERSION="4.5.30_0015.0017"
+VERSION="4.5.50_0025.0017"
 RCP_SPI_OTA_FILENAME="rcp-spi-802154-512-v0017.gbl"
 BOOT_MD5SUM=""
 COOR_BIN="rcp-spi-ble-image-ota-v0017-20241223-8F636F.gbl"
 COOR_MD5SUM=""
 RCP_SPI_MD5SUM="dd483215970fd81661575231fa0241af"
-KERNEL_MD5SUM="ba6dca6d7d01283c74b5e7ae71db85e5"
-ROOTFS_MD5SUM="3bc46a43f39875a35a3df34836f7025a"
+KERNEL_MD5SUM="9569ed3820588015f0ee86b1932499b3"
+ROOTFS_MD5SUM="36f739c5714ab77d6581d06dae7dac3d"
 MUSICS_MD5SUM=""
-MODIFIED_ROOTFS_MD5SUM="be74a24d41408477ac34d543786a3029"
+MODIFIED_ROOTFS_MD5SUM="34420e815c009ed4cec15907740adb2d"
 
 FW_TYPE=1
 
@@ -1108,7 +1108,9 @@ update_done() {
     set_rootfs_partitions "$ROOTFS_PARTITION"
     update_clean
     sleep 7
-    reboot
+#    reboot
+    green_echo ""
+    green_echo "Update Done, Please manually reboot!"
 }
 
 #
@@ -1234,7 +1236,7 @@ initial() {
     echo "1883,54322" >/proc/sys/net/ipv4/ip_local_reserved_ports
     product=$(agetprop ro.sys.model)
 
-    model="AH_M1S"
+    model="AH_M200"
 
     if [ "$product" != "lumi.gateway.agl011" ]; then
         red_echo "This is not supported M200 and exit!"
