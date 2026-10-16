@@ -822,14 +822,16 @@ initial()
     echo "1883,54322" > /proc/sys/net/ipv4/ip_local_reserved_ports
     product=`agetprop persist.sys.model`
 
-    # Aqara Camer Hub G2HPro.
-    if   [ "$product" = "lumi.camera.acn003" ]; then
-        model="AH_G2HPro"
-    fi
+    # Aqara Camera Hub G2HPro.
+	case "$product" in
+	    lumi.camera.acn003|lumi.camera.agl001)
+	        model="AH_G2HPro"
+	        ;;
+	esac
 
     green_echo "type: $product, model: $model"
 
-    if [ "$product" != "lumi.camera.acn003" ]; then
+    if [ "$model" != "AH_G2HPro" ]; then
         echo "This is not supported G2H PRO and exit!"
         exit 1
     fi
